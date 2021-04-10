@@ -94,7 +94,6 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.rRotation = self.rotate_le.text()
 
         sel = cmds.ls(sl=1, fl=1)
-        #print(len(sel))
 
         objects = cmds.filterExpand(sel, selectionMask=12, expand=1)
 
@@ -105,18 +104,15 @@ class ScatterToolUI(QtWidgets.QDialog):
         else:
             vertex_names = cmds.filterExpand(sel, selectionMask=31, expand=1)
 
-        #print(len(vertex_names))
 
-        _instance_object_(obj_instance, vertex_names)
+        self._instance_object_(obj_instance, vertex_names, self.size_le.text())
 
-    def _instance_object_(obj_instance, vertex_names):
-        s = self.rScale
+    def _instance_object_(self, obj_instance, vertex_names, size):
+
         if cmds.objectType(obj_instance) == "transform":
-            #print(len(vertex_names))
 
             for vertex in vertex_names:
-                scale = random.random(0, s) 
-                #print(cmds.polyNormalPerVertex(vertex, query=1, xyz=1))
+                scale = (random.random() * (float(size)/100)) + 1
                 new_instance = cmds.instance(obj_instance)
                 position = cmds.pointPosition(vertex, world=1)
                 cmds.move(position[0], position[1], position[2], new_instance, absolute=1, worldSpace=1)
