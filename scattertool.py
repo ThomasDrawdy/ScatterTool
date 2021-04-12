@@ -30,7 +30,7 @@ class ScatterToolUI(QtWidgets.QDialog):
         super(ScatterToolUI, self).__init__(parent=maya_main_window())
         self.setWindowTitle("Scatter")
         self.setMinimumWidth(400)
-        self.setMinimumHeight(150)
+        self.setMinimumHeight(170)
         self.create_ui()
 
     def create_ui(self):
@@ -53,6 +53,7 @@ class ScatterToolUI(QtWidgets.QDialog):
 
         self.close_button = QtWidgets.QPushButton('Close')
         self.close_button.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+        self.close_button.clicked.connect(self.close)
 
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.scatter_button)
@@ -68,13 +69,29 @@ class ScatterToolUI(QtWidgets.QDialog):
 
         self.size_percent_lbl = QtWidgets.QLabel("%")
 
-        self.rotate_header_lbl = QtWidgets.QLabel("Random Rotation: ")
-        self.rotate_header_lbl.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.rotatex_header_lbl = QtWidgets.QLabel("Random X Rotation: ")
+        self.rotatex_header_lbl.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
-        self.rotate_le = QtWidgets.QLineEdit("0")
-        self.rotate_le.setFixedWidth(40)
+        self.rotatex_le = QtWidgets.QLineEdit("0")
+        self.rotatex_le.setFixedWidth(40)
 
-        self.rotate_percent_lbl = QtWidgets.QLabel("")
+        self.rotatex_percent_lbl = QtWidgets.QLabel("")
+
+        self.rotatey_header_lbl = QtWidgets.QLabel("Random Y Rotation: ")
+        self.rotatey_header_lbl.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+
+        self.rotatey_le = QtWidgets.QLineEdit("0")
+        self.rotatey_le.setFixedWidth(40)
+
+        self.rotatey_percent_lbl = QtWidgets.QLabel("")
+
+        self.rotatez_header_lbl = QtWidgets.QLabel("Random Z Rotation: ")
+        self.rotatez_header_lbl.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+
+        self.rotatez_le = QtWidgets.QLineEdit("0")
+        self.rotatez_le.setFixedWidth(40)
+
+        self.rotatez_percent_lbl = QtWidgets.QLabel("")
 
         layout = QtWidgets.QGridLayout()
         layout.setColumnStretch(2, 1)
@@ -83,15 +100,22 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout.addWidget(self.size_le, 0, 1)
         layout.addWidget(self.size_percent_lbl, 0, 2)
 
-        layout.addWidget(self.rotate_header_lbl, 1, 0)
-        layout.addWidget(self.rotate_le, 1, 1)
-        layout.addWidget(self.rotate_percent_lbl, 1, 2)
+        layout.addWidget(self.rotatex_header_lbl, 1, 0)
+        layout.addWidget(self.rotatex_le, 1, 1)
+        layout.addWidget(self.rotatex_percent_lbl, 1, 2)
+
+        layout.addWidget(self.rotatey_header_lbl, 2, 0)
+        layout.addWidget(self.rotatey_le, 2, 1)
+        layout.addWidget(self.rotatey_percent_lbl, 2, 2)
+
+        layout.addWidget(self.rotatez_header_lbl, 3, 0)
+        layout.addWidget(self.rotatez_le, 3, 1)
+        layout.addWidget(self.rotatez_percent_lbl, 3, 2)
 
         return layout
 
     def instance(self):
         self.rScale = self.size_le.text()
-        self.rRotation = self.rotate_le.text()
 
         sel = cmds.ls(sl=1, fl=1)
 
@@ -104,19 +128,23 @@ class ScatterToolUI(QtWidgets.QDialog):
         else:
             vertex_names = cmds.filterExpand(sel, selectionMask=31, expand=1)
 
+        self._instance_object_(obj_instance, vertex_names, self.size_le.text(), self.rotatex_le.text(),
+                               self.rotatey_le.text(), self.rotatez_le.text())
 
-        self._instance_object_(obj_instance, vertex_names, self.size_le.text())
-
-    def _instance_object_(self, obj_instance, vertex_names, size):
+    def _instance_object_(self, obj_instance, vertex_names, size, rotatex, rotatey, rotatez):
 
         if cmds.objectType(obj_instance) == "transform":
 
             for vertex in vertex_names:
                 scale = (random.random() * (float(size)/100)) + 1
+                turnx = (random.random() * (float(rotatex)))
+                turny = (random.random() * (float(rotatey)))
+                turnz = (random.random() * (float(rotatez)))
                 new_instance = cmds.instance(obj_instance)
                 position = cmds.pointPosition(vertex, world=1)
                 cmds.move(position[0], position[1], position[2], new_instance, absolute=1, worldSpace=1)
                 cmds.scale(scale, scale, scale, new_instance, relative=1, worldSpace=1)
+                cmds.rotate(turnx, turny, turnz, new_instance, relative=1, componentSpace=1)
 
         else:
             print("Please select a transform to instance.")
