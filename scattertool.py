@@ -219,6 +219,7 @@ class ScatterToolUI(QtWidgets.QDialog):
                 if align:
                     self._align_vert_(new_instance, vertex, turnx, turny, turnz)
 
+                cmds.rotate(turnx, turny, turnz, new_instance, relative=1, componentSpace=1)
                 lay = int(self.layer_le.text())
 
                 if lay > 0:
@@ -234,11 +235,10 @@ class ScatterToolUI(QtWidgets.QDialog):
 
         cmds.normalConstraint(_vert, new_instance, rm=1)
 
-        cmds.rotate(turnx, turny, turnz, new_instance, relative=1, componentSpace=1)
+
 
     def _layer_instance_(self, obj, instance, layers):
         if layers <= 0:
-            print "242"
             return layers
         else:
             layers = layers - 1
@@ -246,7 +246,7 @@ class ScatterToolUI(QtWidgets.QDialog):
             sel = cmds.ls(sl=1, fl=1)
 
             vertex_names = cmds.ls(sel[0] + '.vtx[*]', fl=1, )
-            vertex_names = random.sample(vertex_names, int((float(self.layer_percent_le.text())) * len(vertex_names) * 0.01))
+            vertex_names = random.sample(vertex_names, int(random.random() * ((float(self.layer_percent_le.text())) * len(vertex_names) * 0.01)))
 
             print vertex_names
             if vertex_names is not None:
@@ -264,8 +264,11 @@ class ScatterToolUI(QtWidgets.QDialog):
                     cmds.scale(scalex, scaley, scalez, new_instance, relative=1, worldSpace=0)
 
                     if self.n_align_cb.checkState():
-                        self._align_vert_(new_instance, vertex, turnx, turny, turnz)
+                        cmds.orientConstraint(obj, new_instance)
+                        cmds.orientConstraint(obj, new_instance, e=True, rm=True)
 
+
+                    cmds.rotate(turnx, turny, turnz, new_instance, relative=1, componentSpace=1)
                     self._layer_instance_(new_instance, instance, layers)
                 return vertex_names
 
